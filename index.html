@@ -1,19 +1,135 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ar" dir="rtl">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>My Audio Player</title>
-  <link rel="stylesheet" href="style.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HXX DJ</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-  <div class="playlist-container">
-    <h2>My Playlist</h2>
-    <ul id="song-list" class="song-list">
-      </ul>
-  </div>
+<div class="app-header">
+    <div class="logo-area">
+        <img src="hx-logo.jpg" class="app-logo" alt="Logo">
+        <div class="logo-text">HXX DJ 🎧</div>
+    </div>
+    <div class="header-buttons">
+        <button class="chat-btn" onclick="openFullChat()">🤖</button>
+        <button class="lang-btn" id="langBtn">English</button>
+    </div>
+</div>
 
-  <script src="script.js"></script>
+<div class="search-container">
+    <div class="search-bar">
+        <span>⚙️</span>
+        <input type="text" placeholder="Search songs" id="searchInput" data-ar-placeholder="ابحث عن الأغاني" data-en-placeholder="Search songs">
+        <span>🎤</span>
+    </div>
+</div>
+
+<div class="tabs">
+    <div class="tab" data-ar="الأغاني" data-en="Songs">Songs</div>
+</div>
+
+<div class="shuffle-bar">
+    <button class="shuffle-btn" onclick="shufflePlay()">
+        <div class="shuffle-icon">▶️</div>
+        <span data-ar="تشغيل عشوائي" data-en="Shuffle playback">Shuffle playback</span>
+    </button>
+    <div class="list-actions">
+        <span class="action-icon">↕️</span>
+        <span class="action-icon">☰</span>
+    </div>
+</div>
+
+<div class="songs-list" id="songsList"></div>
+
+<button class="add-song-btn" onclick="openModal()">+</button>
+
+<div class="mini-player" id="miniPlayer">
+    <div class="mini-art" id="miniArt">💿</div>
+    <div class="mini-info">
+        <div class="mini-title" id="miniTitle">Song Name</div>
+        <div class="mini-artist" id="miniArtist">Artist</div>
+    </div>
+    <div class="mini-controls">
+        <button class="mini-control-btn" onclick="event.stopPropagation(); togglePlayPause()">⏸️</button>
+        <button class="mini-control-btn" onclick="event.stopPropagation(); playNext()">⏭️</button>
+    </div>
+</div>
+
+<div class="fullscreen-player" id="fullPlayer">
+    <div class="full-player-header">
+        <button class="back-down-btn" onclick="closeFullPlayer()">⌄</button>
+        <div class="header-icons">
+            <button class="header-icon-btn">🎵</button>
+            <button class="header-icon-btn">🎧</button>
+        </div>
+    </div>
+
+    <div class="full-player-content">
+        <div class="full-art-wrapper" id="fullPlayerArt">💿</div>
+
+        <div class="full-song-info">
+            <div class="song-details">
+                <div class="full-song-name" id="fullSongName">Song Name</div>
+                <div class="full-artist-name" id="fullArtistName">Artist</div>
+            </div>
+            <button class="like-btn" onclick="toggleLike()" id="likeBtn">☆</button>
+        </div>
+
+        <div class="lyrics-section">
+            <span data-ar="لا توجد كلمات" data-en="No lyrics">لا توجد كلمات</span>
+        </div>
+
+        <div class="progress-container">
+            <input type="range" class="progress-bar" id="progressBar" value="0" max="100">
+            <div class="time-info">
+                <span id="currentTime">0:00</span>
+                <span id="totalTime">0:00</span>
+            </div>
+        </div>
+
+        <div class="full-controls">
+            <button class="control-btn" onclick="toggleShuffle()" id="shuffleBtn">🔀</button>
+            <button class="control-btn" onclick="playPrev()">⏮️</button>
+            <button class="control-btn play-pause-btn" onclick="togglePlayPause()" id="playPauseBtn">▶️</button>
+            <button class="control-btn" onclick="playNext()">⏭️</button>
+            <button class="control-btn" onclick="toggleRepeat()" id="repeatBtn">🔁</button>
+        </div>
+    </div>
+</div>
+
+<div class="chat-overlay" id="chatOverlay">
+    <div class="chat-header">
+        <button class="back-btn" onclick="closeFullChat()" data-ar="← رجوع للأغاني" data-en="← Back to Songs">← رجوع للأغاني</button>
+        <span>SeaArt AI ✨</span>
+    </div>
+    <iframe
+        src="https://www.seaart.ai/agent"
+        style="width:100%; height:calc(100vh - 50px); border:none;"
+        allow="clipboard-read; clipboard-write; microphone">
+    </iframe>
+</div>
+
+<div class="modal" id="addModal">
+    <div class="modal-content">
+        <h2 data-ar="اضف أغنيتك الخاصة" data-en="Add Your Song">اضف أغنيتك الخاصة</h2>
+        <label data-ar="اسم الأغنية" data-en="Song Name">اسم الأغنية</label>
+        <input type="text" id="songName" placeholder="مثال: أغنيتي المفضلة">
+        <label data-ar="اسم المغني" data-en="Artist Name">اسم المغني</label>
+        <input type="text" id="artistName" placeholder="مثال: فنان مجهول">
+        <label data-ar="ملف الأغنية MP3" data-en="MP3 File">ملف الأغنية MP3</label>
+        <input type="file" id="songFile" accept=".mp3">
+        <div class="modal-actions">
+            <button class="cancel-btn" onclick="closeModal()" data-ar="إلغاء" data-en="Cancel">إلغاء</button>
+            <button class="save-btn" onclick="saveCustomSong()" data-ar="حفظ في المكتبة" data-en="Save to Library">حفظ في المكتبة</button>
+        </div>
+    </div>
+</div>
+
+<audio id="playerAudio"></audio>
+
+<script src="script.js"></script>
 </body>
 </html>
